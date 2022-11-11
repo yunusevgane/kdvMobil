@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.dovizkuruborsasi.kdv">
+    package="com.shemaster.kdv">
    <application
         android:label="KDV Hesap Makinesi"
         android:name="${applicationName}"
@@ -21,9 +21,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-       <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-9410328109595500~8304596271"/>
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

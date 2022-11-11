@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'reklam.dart';
 
 class anasayfa extends StatefulWidget {
   const anasayfa({Key? key}) : super(key: key);
@@ -8,8 +7,8 @@ class anasayfa extends StatefulWidget {
   _anasayfaState createState() => _anasayfaState();
 }
 
-var kdvdahilrenk = Color(0xff8C3037);
-var kdvharicrenk = Color.fromARGB(255, 40, 52, 58);
+var kdvdahilrenk = const Color.fromARGB(255, 40, 52, 58);
+var kdvharicrenk = const Color(0xff8C3037);
 
 int kdvdurum = 1;
 double kdvorani = 18;
@@ -28,16 +27,17 @@ void hesapla() {
   if (kdvorani != 0) {
     kdvoranim = kdvorani;
   }
-  ;
 
   if (kdvdurum == 1) {
-    kdv.text = ((tutarim * kdvoranim) / 100).toString();
-    kdvtoplam.text = ((tutarim * kdvoranim) / 100).toString();
-    toplam.text = (tutarim + ((tutarim * kdvoranim) / 100)).toString();
+    kdv.text = ((tutarim * kdvoranim) / 100).toStringAsFixed(2).toString();
+    kdvtoplam.text = ((tutarim * kdvoranim) / 100).toStringAsFixed(2).toString();
+    toplam.text =
+        (tutarim + ((tutarim * kdvoranim) / 100)).toStringAsFixed(2).toString();
   } else {
-    kdv.text = ((tutarim * kdvoranim) / 100).toString();
-    kdvtoplam.text = (tutarim - (tutarim / (1 + (kdvoranim / 100)))).toString();
-    toplam.text = (tutarim / (1 + (kdvoranim / 100))).toString();
+    kdv.text = ((tutarim * kdvoranim) / 100).toStringAsFixed(2).toString();
+    kdvtoplam.text = (tutarim - (tutarim / (1 + (kdvoranim / 100)))).toStringAsFixed(2).toString();
+    toplam.text =
+        (tutarim / (1 + (kdvoranim / 100))).toStringAsFixed(2).toString();
   }
 }
 
@@ -45,7 +45,7 @@ class _anasayfaState extends State<anasayfa> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF455A64),
+      backgroundColor: const Color(0xFF455A64),
       body: SingleChildScrollView(
         // <-- wrap this around
         child: Column(
@@ -65,7 +65,7 @@ class _anasayfaState extends State<anasayfa> {
                     keyboardType: TextInputType.number,
                     controller: tutar,
                     decoration: InputDecoration(
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                         labelText: b1,
                         labelStyle: const TextStyle(color: Color(0xffffffff)),
                         enabledBorder: const OutlineInputBorder(
@@ -121,7 +121,7 @@ class _anasayfaState extends State<anasayfa> {
                     controller: toplam,
                     enabled: false,
                     decoration: InputDecoration(
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                         labelText: b2,
                         labelStyle: const TextStyle(color: Color(0xffffffff)),
                         enabledBorder: const OutlineInputBorder(
@@ -148,8 +148,9 @@ class _anasayfaState extends State<anasayfa> {
                             b2 = "Tutar";
 
                             kdvdurum = 0;
-                            kdvdahilrenk = Color.fromARGB(255, 40, 52, 58);
-                            kdvharicrenk = Color(0xff8C3037);
+                            kdvdahilrenk = const Color(0xff8C3037);
+                            kdvharicrenk =
+                                const Color.fromARGB(255, 40, 52, 58);
                             hesapla();
                           });
                         },
@@ -159,8 +160,8 @@ class _anasayfaState extends State<anasayfa> {
                             color: kdvdahilrenk,
                           ),
                           width: (MediaQuery.of(context).size.width * 0.5) - 40,
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
+                          child: const Padding(
+                            padding: EdgeInsets.all(10.0),
                             child: Center(child: Text("KDV DAHİL")),
                           ),
                         )),
@@ -172,8 +173,9 @@ class _anasayfaState extends State<anasayfa> {
                             b1 = "Tutar";
                             b2 = "Toplam";
                             kdvdurum = 1;
-                            kdvdahilrenk = Color(0xff8C3037);
-                            kdvharicrenk = Color.fromARGB(255, 40, 52, 58);
+                            kdvdahilrenk =
+                                const Color.fromARGB(255, 40, 52, 58);
+                            kdvharicrenk = const Color(0xff8C3037);
                             hesapla();
                           });
                         },
@@ -183,8 +185,8 @@ class _anasayfaState extends State<anasayfa> {
                             color: kdvharicrenk,
                           ),
                           width: (MediaQuery.of(context).size.width * 0.5) - 40,
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
+                          child: const Padding(
+                            padding: EdgeInsets.all(10.0),
                             child: Center(child: Text("KDV HARİÇ")),
                           ),
                         ),
@@ -348,12 +350,6 @@ class _anasayfaState extends State<anasayfa> {
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-          height: 60,
-          decoration: const BoxDecoration(
-            color: Color(0xFF424143),
-          ),
-          child: BannerReklam()),
     );
   }
 }
