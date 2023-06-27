@@ -2,7 +2,7 @@
     <application
         android:label="KDV Hesap Makinesi"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/logoicon">
         <activity
             android:name=".MainActivity"
             android:exported="true"
