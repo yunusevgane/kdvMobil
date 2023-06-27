@@ -43,3 +43,10 @@ flutter_icons:
 # dart fix --apply
 # flutter format .
 # dart migrate.
+
+
+# flutter clean
+# flutter pub get
+# cd ios
+# pod deintegrate
+# pod install
