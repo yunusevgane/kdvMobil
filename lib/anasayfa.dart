@@ -11,7 +11,7 @@ var kdvdahilrenk = const Color.fromARGB(255, 40, 52, 58);
 var kdvharicrenk = const Color(0xff8C3037);
 
 int kdvdurum = 1;
-double kdvorani = 18;
+double kdvorani = 20;
 double tutarim = 0;
 double kdvoranim = kdvorani;
 
@@ -290,23 +290,23 @@ class _anasayfaState extends State<anasayfa> {
                       GestureDetector(
                         onTap: () {
                           setState(() {
-                            kdvorani = 18;
+                            kdvorani = 20;
                             hesapla();
                           });
                         },
                         child: Column(
                           children: [
-                            if (kdvorani == 18)
+                            if (kdvorani == 20)
                               const Icon(
                                 Icons.radio_button_checked,
                                 size: 34.0,
                               ),
-                            if (kdvorani != 18)
+                            if (kdvorani != 20)
                               const Icon(
                                 Icons.radio_button_off,
                                 size: 34.0,
                               ),
-                            const Text("%18",
+                            const Text("%20",
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
