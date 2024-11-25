@@ -1,3 +1,4 @@
 {
-  "yaml.schemaStore.enable": false
+  "yaml.schemaStore.enable": false,
+  "java.configuration.updateBuildConfiguration": "interactive"
 }
