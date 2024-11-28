@@ -1,350 +1,408 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class anasayfa extends StatefulWidget {
-  const anasayfa({Key? key}) : super(key: key);
+class Anasayfa extends StatefulWidget {
+  const Anasayfa({Key? key}) : super(key: key);
 
   @override
-  _anasayfaState createState() => _anasayfaState();
+  _AnasayfaState createState() => _AnasayfaState();
 }
 
-var kdvdahilrenk = const Color.fromARGB(255, 40, 52, 58);
-var kdvharicrenk = const Color(0xff8C3037);
+var kdvDahilRenk = const Color.fromARGB(255, 40, 52, 58);
+var kdvHaricRenk = const Color(0xff8C3037);
 
-int kdvdurum = 1;
-double kdvorani = 18;
-double tutarim = 0;
-double kdvoranim = kdvorani;
+int kdvDurum = 1;
+double kdvOrani = 20;
+double tutar = 0;
+double kdvOranInput = kdvOrani;
 
-String b1 = "Tutar";
-String b2 = "Toplam";
+String label1 = "Tutar";
+String label2 = "Toplam";
 
-TextEditingController tutar = TextEditingController();
-TextEditingController kdv = TextEditingController();
-TextEditingController kdvtoplam = TextEditingController();
-TextEditingController toplam = TextEditingController();
+TextEditingController tutarController = TextEditingController();
+TextEditingController kdvController = TextEditingController();
+TextEditingController kdvToplamController = TextEditingController();
+TextEditingController toplamController = TextEditingController();
 
-void hesapla() {
-  if (kdvorani != 0) {
-    kdvoranim = kdvorani;
+class _AnasayfaState extends State<Anasayfa> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  final _formKey = GlobalKey<FormState>();
+  bool _isCalculating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
   }
 
-  if (kdvdurum == 1) {
-    kdv.text = ((tutarim * kdvoranim) / 100).toStringAsFixed(2).toString();
-    kdvtoplam.text = ((tutarim * kdvoranim) / 100).toStringAsFixed(2).toString();
-    toplam.text =
-        (tutarim + ((tutarim * kdvoranim) / 100)).toStringAsFixed(2).toString();
-  } else {
-    kdv.text = ((tutarim * kdvoranim) / 100).toStringAsFixed(2).toString();
-    kdvtoplam.text = (tutarim - (tutarim / (1 + (kdvoranim / 100)))).toStringAsFixed(2).toString();
-    toplam.text =
-        (tutarim / (1 + (kdvoranim / 100))).toStringAsFixed(2).toString();
+  @override
+  void dispose() {
+    _controller.dispose();
+    tutarController.dispose();
+    kdvController.dispose();
+    kdvToplamController.dispose();
+    toplamController.dispose();
+    super.dispose();
   }
-}
 
-class _anasayfaState extends State<anasayfa> {
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(10),
+      ),
+    );
+  }
+
+  void hesapla() {
+    setState(() {
+      _isCalculating = true;
+    });
+
+    try {
+      if (kdvOrani != 0) {
+        kdvOranInput = kdvOrani;
+      }
+
+      if (tutar <= 0) {
+        _showSnackBar('Lütfen geçerli bir tutar giriniz');
+        return;
+      }
+
+      if (kdvDurum == 1) {
+        kdvController.text = ((tutar * kdvOranInput) / 100).toStringAsFixed(2);
+        kdvToplamController.text = ((tutar * kdvOranInput) / 100).toStringAsFixed(2);
+        toplamController.text = (tutar + ((tutar * kdvOranInput) / 100)).toStringAsFixed(2);
+      } else {
+        kdvController.text = ((tutar * kdvOranInput) / 100).toStringAsFixed(2);
+        kdvToplamController.text = (tutar - (tutar / (1 + (kdvOranInput / 100)))).toStringAsFixed(2);
+        toplamController.text = (tutar / (1 + (kdvOranInput / 100))).toStringAsFixed(2);
+      }
+
+      _controller.forward(from: 0.0);
+    } catch (e) {
+      _showSnackBar('Hesaplama sırasında bir hata oluştu');
+    } finally {
+      setState(() {
+        _isCalculating = false;
+      });
+    }
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required bool isEnabled,
+    Function(String)? onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        enabled: isEnabled,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+        ),
+        onChanged: onChanged,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        decoration: InputDecoration(
+          contentPadding: const EdgeInsets.all(20),
+          border: InputBorder.none,
+          labelText: label,
+          labelStyle: const TextStyle(
+            color: Colors.white60,
+            fontSize: 16,
+          ),
+          prefixIcon: Icon(
+            icon,
+            color: Colors.white60,
+            size: 22,
+          ),
+          suffixIcon: isEnabled ? IconButton(
+            icon: const Icon(Icons.clear, color: Colors.white60),
+            onPressed: () {
+              controller.clear();
+              setState(() {
+                tutar = 0;
+                hesapla();
+              });
+            },
+          ) : null,
+        ),
+        validator: isEnabled ? (value) {
+          if (value == null || value.isEmpty) {
+            return 'Bu alan boş bırakılamaz';
+          }
+          if (double.tryParse(value) == null) {
+            return 'Geçerli bir sayı giriniz';
+          }
+          return null;
+        } : null,
+      ),
+    );
+  }
+
+  Widget _buildModeButton(String text, int mode) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            if (mode == 0) {
+              label1 = "Toplam";
+              label2 = "Tutar";
+              kdvDurum = 0;
+            } else {
+              label1 = "Tutar";
+              label2 = "Toplam";
+              kdvDurum = 1;
+            }
+            hesapla();
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: kdvDurum == mode ? Colors.white.withOpacity(0.2) : Colors.transparent,
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: kdvDurum == mode ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKDVButton(double rate, String label) {
+    final isSelected = kdvOrani == rate;
+    return ScaleTransition(
+      scale: isSelected ? Tween(begin: 1.0, end: 1.1).animate(_controller) : const AlwaysStoppedAnimation(1.0),
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            kdvOrani = rate;
+            hesapla();
+          });
+          HapticFeedback.lightImpact();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF8C3037) : Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: isSelected ? [
+              BoxShadow(
+                color: const Color(0xFF8C3037).withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ] : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF455A64),
-      body: SingleChildScrollView(
-        // <-- wrap this around
+      backgroundColor: const Color(0xFF1E1E1E),
+      body: SafeArea(
         child: Column(
           children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.width * 0.28,
-              child: Ink.image(
-                image: const AssetImage('assets/bg.png'),
-                fit: BoxFit.fill,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(30.0),
-              child: Column(
-                children: [
-                  TextFormField(
-                    keyboardType: TextInputType.number,
-                    controller: tutar,
-                    decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText: b1,
-                        labelStyle: const TextStyle(color: Color(0xffffffff)),
-                        enabledBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(5)),
-                            borderSide: BorderSide(
-                              color: Color(0xFFFFFFFF),
-                            )),
-                        focusedBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(5)),
-                            borderSide: BorderSide(
-                              color: Color(0xffffffff),
-                            ))),
-                    textAlign: TextAlign.left,
-                    onChanged: (value) => {
-                      setState(() {
-                        if (double.tryParse(value) == null) {
-                          tutarim = 0;
-                          kdvtoplam.text = "0";
-                          toplam.text = "0";
-                        } else {
-                          tutarim = double.parse(value);
-                          hesapla();
-                        }
-                      })
-                    },
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    controller: kdvtoplam,
-                    enabled: false,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'KDV Tutarı',
-                        labelStyle: TextStyle(color: Color(0xffffffff)),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(5)),
-                            borderSide: BorderSide(
-                              color: Color(0xFFFFFFFF),
-                            )),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(5)),
-                            borderSide: BorderSide(
-                              color: Color(0xffffffff),
-                            ))),
-                    textAlign: TextAlign.left,
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    controller: toplam,
-                    enabled: false,
-                    decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText: b2,
-                        labelStyle: const TextStyle(color: Color(0xffffffff)),
-                        enabledBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(5)),
-                            borderSide: BorderSide(
-                              color: Color(0xFFFFFFFF),
-                            )),
-                        focusedBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(5)),
-                            borderSide: BorderSide(
-                              color: Color(0xffffffff),
-                            ))),
-                    textAlign: TextAlign.left,
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            b1 = "Toplam";
-                            b2 = "Tutar";
-
-                            kdvdurum = 0;
-                            kdvdahilrenk = const Color(0xff8C3037);
-                            kdvharicrenk =
-                                const Color.fromARGB(255, 40, 52, 58);
-                            hesapla();
-                          });
-                        },
-                        child: (Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: kdvdahilrenk,
-                          ),
-                          width: (MediaQuery.of(context).size.width * 0.5) - 40,
-                          child: const Padding(
-                            padding: EdgeInsets.all(10.0),
-                            child: Center(child: Text("KDV DAHİL")),
-                          ),
-                        )),
-                      ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            b1 = "Tutar";
-                            b2 = "Toplam";
-                            kdvdurum = 1;
-                            kdvdahilrenk =
-                                const Color.fromARGB(255, 40, 52, 58);
-                            kdvharicrenk = const Color(0xff8C3037);
-                            hesapla();
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: kdvharicrenk,
-                          ),
-                          width: (MediaQuery.of(context).size.width * 0.5) - 40,
-                          child: const Padding(
-                            padding: EdgeInsets.all(10.0),
-                            child: Center(child: Text("KDV HARİÇ")),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        Container(
+                          height: MediaQuery.of(context).size.height * 0.25,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF8C3037), Color(0xFF455A64)],
+                            ),
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(40),
+                              bottomRight: Radius.circular(40),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  if (kdvorani == 0)
-                    const SizedBox(
-                      height: 20,
+                        Positioned(
+                          top: 20,
+                          left: 0,
+                          right: 0,
+                          child: Column(
+                            children: [
+                              const Text(
+                                "KDV Hesaplama",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 24),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildModeButton("KDV DAHİL", 0),
+                                    _buildModeButton("KDV HARİÇ", 1),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  if (kdvorani == 0)
-                    TextFormField(
-                      decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'KDV Oranı',
-                          labelStyle: TextStyle(color: Color(0xffffffff)),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5)),
-                              borderSide: BorderSide(
-                                color: Color(0xFFFFFFFF),
-                              )),
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5)),
-                              borderSide: BorderSide(
-                                color: Color(0xffffffff),
-                              ))),
-                      onChanged: (value) => {
-                        setState(() {
-                          if (double.tryParse(value) == null) {
-                          } else {
-                            kdvoranim = double.parse(value);
-                            hesapla();
-                          }
-                        })
-                      },
-                      textAlign: TextAlign.left,
+                    Transform.translate(
+                      offset: const Offset(0, -30),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A2A2A),
+                          borderRadius: BorderRadius.circular(25),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            children: [
+                              _buildInputField(
+                                controller: tutarController,
+                                label: label1,
+                                icon: Icons.account_balance_wallet,
+                                isEnabled: true,
+                                onChanged: (value) {
+                                  setState(() {
+                                    if (double.tryParse(value) == null) {
+                                      tutar = 0;
+                                      kdvToplamController.text = "0";
+                                      toplamController.text = "0";
+                                    } else {
+                                      tutar = double.parse(value);
+                                      hesapla();
+                                    }
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              _buildInputField(
+                                controller: kdvToplamController,
+                                label: "KDV Tutarı",
+                                icon: Icons.calculate,
+                                isEnabled: false,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildInputField(
+                                controller: toplamController,
+                                label: label2,
+                                icon: Icons.payments,
+                                isEnabled: false,
+                              ),
+                              if (kdvOrani == 0) ...[
+                                const SizedBox(height: 16),
+                                _buildInputField(
+                                  controller: TextEditingController(),
+                                  label: "KDV Oranı",
+                                  icon: Icons.percent,
+                                  isEnabled: true,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      if (double.tryParse(value) != null) {
+                                        kdvOranInput = double.parse(value);
+                                        hesapla();
+                                      }
+                                    });
+                                  },
+                                ),
+                              ],
+                              const SizedBox(height: 24),
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E1E1E),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "KDV Oranı Seçin",
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Wrap(
+                                      alignment: WrapAlignment.spaceEvenly,
+                                      spacing: 8.0,
+                                      runSpacing: 8.0,
+                                      children: [
+                                        _buildKDVButton(1, "%1"),
+                                        _buildKDVButton(8, "%8"),
+                                        _buildKDVButton(18, "%18"),
+                                        _buildKDVButton(20, "%20"),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            kdvorani = 1;
-                            hesapla();
-                          });
-                        },
-                        child: Column(
-                          children: [
-                            if (kdvorani == 1)
-                              const Icon(
-                                Icons.radio_button_checked,
-                                size: 34.0,
-                              ),
-                            if (kdvorani != 1)
-                              const Icon(
-                                Icons.radio_button_off,
-                                size: 34.0,
-                              ),
-                            const Text("%1",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            kdvorani = 8;
-                            hesapla();
-                          });
-                        },
-                        child: Column(
-                          children: [
-                            if (kdvorani == 8)
-                              const Icon(
-                                Icons.radio_button_checked,
-                                size: 34.0,
-                              ),
-                            if (kdvorani != 8)
-                              const Icon(
-                                Icons.radio_button_off,
-                                size: 34.0,
-                              ),
-                            const Text("%8",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            kdvorani = 18;
-                            hesapla();
-                          });
-                        },
-                        child: Column(
-                          children: [
-                            if (kdvorani == 18)
-                              const Icon(
-                                Icons.radio_button_checked,
-                                size: 34.0,
-                              ),
-                            if (kdvorani != 18)
-                              const Icon(
-                                Icons.radio_button_off,
-                                size: 34.0,
-                              ),
-                            const Text("%18",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            kdvorani = 0;
-                            hesapla();
-                          });
-                        },
-                        child: Column(
-                          children: [
-                            if (kdvorani == 0)
-                              const Icon(
-                                Icons.radio_button_checked,
-                                size: 34.0,
-                              ),
-                            if (kdvorani != 0)
-                              const Icon(
-                                Icons.radio_button_off,
-                                size: 34.0,
-                              ),
-                            const Text("?",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
